@@ -1,9 +1,5 @@
 import pygame as pyg
 
-import modules.chunk_text as chunk_text
-from classes.globals import Globals
-from classes.display import Fonts
-
 # Keyboard input for text boxes
 def handler(content, key, key_mods, cursor):
     '''
@@ -47,6 +43,12 @@ def handler(content, key, key_mods, cursor):
         cursor += 1
         
     content = content[:cursor-1] + char + content[cursor-1:]
+
+    # Ctrl+Shift+Backspace == delete all content
+    if key == pyg.K_BACKSPACE and ctrl and shift and len(content) > 0:
+        content = ""
+        cursor = 0
+        return content, cursor
 
     # Ctrl/Backspace
     if key == pyg.K_BACKSPACE and len(content) > 0 and cursor != 0:

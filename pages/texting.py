@@ -17,9 +17,11 @@ def Texting():
     # There's a difference between the username that the current user has set for a given account, vs the actual account name
     Globals.contact_account_names = []
     # Various input fields
-    message_box = InputField((346, 1000, 658, 22), Fonts.contact_font, "Enter message")
-    new_contact_username = InputField((1205, 300, 300, 30), Fonts.contact_font, "Enter contact's username")
-    objects = [message_box, new_contact_username]
+    message_box = InputField((346, 1000, 658, 22), Fonts.messaging_font, "Enter message", True)
+    new_contact_username = InputField((1220, 300, 360, 30), Fonts.messaging_font, "Enter contact's username")
+    new_contact_email = InputField((1220, 400, 360, 30), Fonts.messaging_font, "Enter contact's email address")
+
+    objects = [message_box, new_contact_username, new_contact_email]
     active_object = message_box
 
 
@@ -74,29 +76,42 @@ def Texting():
                     return "Login"
 
                 # Send message (so long as it's not empty)
-                elif key == pyg.K_RETURN and Globals.current_message != "" and active_object == None:
+                elif key == pyg.K_RETURN and message_box.text != "" and active_object == message_box:
                     # Add message to database and user's messages
                     to = Globals.current_contact["account_name"]
-                    database.insert("messages", {"from": Globals.username, "to": to, "message": Globals.current_message})
-                    Globals.messages[to].insert(0, {"from": Globals.username, "to": to, "message": Globals.current_message})
+                    database.insert("messages", {"from": Globals.username, "to": to, "message": message_box.text})
+                    Globals.messages[to].insert(0, {"from": Globals.username, "to": to, "message": message_box.text})
                     # Reset message and cursor position
-                    Globals.current_message = ""
+                    message_box.text = ""
                     Globals.cursor_position = 0
 
-                # Ctrl+Tab cycling through contacts
+                # Ctrl+Tab cycling 
                 elif ctrl and key == pyg.K_TAB:
-                    index = Globals.contacts.contacts.index(Globals.current_contact["contact_object"])
-                    index += -1 if shift else 1
-                    if index == len(Globals.contacts.contacts):
-                        index = 0
+                    # Cycling through contacts
+                    if Globals.current_menu == "":
+                        index = Globals.contacts.contacts.index(Globals.current_contact["contact_object"])
+                        index += -1 if shift else 1
+                        if index == len(Globals.contacts.contacts):
+                            index = 0
 
-                    try:
-                        Globals.current_contact = {"contact_object": Globals.contacts.contacts[index], "account_name": Globals.contact_account_names[index]}
-                    except IndexError:
-                        print("Invalid contact")
+                        try:
+                            Globals.current_contact = {"contact_object": Globals.contacts.contacts[index], "account_name": Globals.contact_account_names[index]}
+                        except IndexError:
+                            print("Invalid contact")
+
+                    # Cycling through new contact fields
+                    elif Globals.current_menu == "Add contact":
+                        if active_object == new_contact_email:
+                            active_object = None
+                        elif active_object == new_contact_username:
+                            active_object = new_contact_email
+                        else:
+                            active_object = new_contact_username
                     
                 else:
-                    active_object.text, Globals.cursor_position = typing_handler.handler(active_object.text, key, (shift, caps, ctrl), Globals.cursor_position)
+                    if active_object is not None:
+                        active_object.text, Globals.cursor_position = typing_handler.handler(active_object.text, key, (shift, caps, ctrl), Globals.cursor_position)
+                        Globals.cursor_frame = 0
 
             # LMB press
             elif event.type == pyg.MOUSEBUTTONDOWN and event.button == 1:
@@ -104,10 +119,16 @@ def Texting():
                 if message_box.check_mcollision():
                     active_object = message_box
                     Globals.cursor_position = len(active_object.text)
+                    Globals.cursor_frame = 0
                 
                 # Check if the add new contact button was clicked
-                if collides_point(Globals.mouse_position, (10, 10, 190, 25)):
+                elif collides_point(Globals.mouse_position, (10, 10, 190, 25)):
                     Globals.current_menu = "Add contact"
+
+                # Check if the close button was clicked
+                elif collides_point(Globals.mouse_position, circle=(Globals.WIDTH-25, 24, 14)):
+                    pyg.quit()
+                    sys.exit()
 
                 # Check if one of the contacts were clicked
                 contact = Globals.contacts.check_mpress((5, 40, 200, Globals.HEIGHT - 10))
@@ -121,9 +142,14 @@ def Texting():
 
                 if Globals.current_menu == "Add contact":
                     # Check if the new contact fields were clicked
-                    if new_contact_username.check_mcollision():
-                        active_object = new_contact_username
-                        Globals.cursor_position = len(active_object.text)
+                    for field in objects[1:3]:
+                        if field.check_mcollision():
+                            active_object = field
+                            Globals.cursor_position = len(field.text)
+                            Globals.cursor_frame = 0
+        
+        # Blinking cursor
+        Globals.cursor_frame = min (Globals.cursor_timeout * Globals.FPS + 1, Globals.cursor_frame + 1)
         
         # Refresh display
         draw(objects, active_object)

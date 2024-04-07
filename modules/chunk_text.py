@@ -1,5 +1,5 @@
 # Function that splits up a string, returning a list of chunks that are no more than the given max_length
-def Chunk(text, max_length=0, content_width=0, char_size=0):
+def chunk(text, max_length=0, content_width=0, char_width=0):
     '''
     Chunks provided text into sub slices based on the max_length variable
     Parameters: The text to be chunked, an integer max_length to chop to a specific size, content_width and char_size which calculates into max_length
@@ -7,9 +7,9 @@ def Chunk(text, max_length=0, content_width=0, char_size=0):
     '''
     if len(text) == 0:
         return []
-    if content_width != 0 and char_size != 0:
+    if content_width != 0 and char_width != 0:
         try:
-            max_length = content_width // char_size
+            max_length = content_width // char_width
         except:
             return [text]
     

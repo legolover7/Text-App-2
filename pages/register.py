@@ -22,6 +22,7 @@ def Register():
     email_field = InputField((Globals.WIDTH/2-200, 400, 400, 30), Fonts.contact_font, "Enter email")
     password_field = InputField((Globals.WIDTH/2-200, 450, 400, 30), Fonts.contact_font, "Enter password")
     confirm_password_field = InputField((Globals.WIDTH/2-200, 500, 400, 30), Fonts.contact_font, "Confirm password")
+    fields = [username_field, email_field, password_field, confirm_password_field]
     
     # Buttons
     register_button = Button((Globals.WIDTH/2-100, 550, 240, 60), Colors.blue, "Register", Fonts.login_header_2, Colors.white)
@@ -97,7 +98,7 @@ def Register():
                 if register_button.check_mcollision():
                     return_value = register_account(username_field.text, email_field.text, password_field.text, confirm_password_field.text)
                     if return_value in ["Passwords do not match", "Invalid email", "Please enter a username", "Please enter an email address", "Please enter a password"]:
-                        # Password was invalid or the account doesn't exist
+                        # Password was invalid, the account doesn't exist, or one of the fields were empty
                         if return_value != "Passwords don't match":
                             password_field.text = ""
                         confirm_password_field.text = ""
@@ -114,22 +115,21 @@ def Register():
                     pyg.quit()
                     sys.exit()
 
-
-                # Check if the two different input fields were clicked, set the respective one as active if so
-                elif username_field.check_mcollision():
-                    active_field = username_field
-                elif email_field.check_mcollision():
-                    active_field = email_field
-                elif password_field.check_mcollision():
-                    active_field = password_field
-                elif confirm_password_field.check_mcollision():
-                    active_field = confirm_password_field
+                # Check if one of the input fields were clicked, set it as active if so
+                for field in fields:
+                    if field.check_mcollision():
+                        active_field = field
 
                 if active_field is not None:
                     Globals.cursor_position = len(active_field.text)
+                    Globals.cursor_frame = 0
+
+        # Blinking cursor
+        Globals.cursor_frame = min (Globals.cursor_timeout * Globals.FPS + 1, Globals.cursor_frame + 1)
 
         # Refresh screen
         draw(error_message)
+
         # Draw the different objects of the page
         username_field.draw(active_field)
         email_field.draw(active_field)

@@ -24,9 +24,13 @@ class Globals:
     # User's messages
     messages = {}
     contacts = None
-    current_message = ""
     cursor_position = 0
     username = ""
     contact_list = []
     contact_account_names = []
     current_menu = ""
+
+    # In seconds
+    cursor_period = 1.2 * FPS
+    cursor_timeout = 5 * cursor_period
+    cursor_frame = 0 

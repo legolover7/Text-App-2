@@ -23,7 +23,7 @@ def draw(objects, active_object):
 
     # Draw messages component, if any exist
     if Globals.current_contact != {}:
-        draw_messages(VID_BUFFER, HEIGHT)
+        draw_messages(VID_BUFFER, HEIGHT, objects)
 
     # Draw typing box component
     objects[0].draw(active_object)
@@ -34,20 +34,31 @@ def draw(objects, active_object):
 def draw_popup(window, WIDTH, HEIGHT, objects, active_object):
     if Globals.current_menu == "Add contact":
         new_contact_username = objects[1]
+        new_contact_email = objects[2]
+
+        # Draw background
         pyg.draw.rect(window, Colors.gray, (1200, 200, 400, HEIGHT-400), border_radius=10)
         pyg.draw.rect(window, Colors.dark_gray, (1202, 202, 396, HEIGHT-404), border_radius=10)
+        
+        # Draw text
+        text_width = Fonts.new_contact.size("Create New Contact")[0]
+        window.blit(Fonts.new_contact.render("Create New Contact", True, Colors.white), (1200 + (400 - text_width)/2, 210))
+        
+        # Draw input fields
         new_contact_username.draw(active_object)
+        new_contact_email.draw(active_object)
 
 def draw_titlebar(window, WIDTH, HEIGHT):
     """Draws the titlebar containing the close/settings icons"""
-    # Close button icon
-    if collides_point(Globals.mouse_position, circle=(WIDTH-25, 24, 14)):
-        pyg.draw.circle(window, Colors.gray, (WIDTH-25, 24), 14)
-    window.blit(pyg.image.load("assets/close.png"), (WIDTH-40, 10))
     # Settings button icon
     if collides_point(Globals.mouse_position, circle=(WIDTH-60, 24, 14)):
         pyg.draw.circle(window, Colors.gray, (WIDTH-60, 24), 14)
     window.blit(pyg.image.load("assets/settings.png"), (WIDTH-75, 9))
+
+    # Close button icon
+    if collides_point(Globals.mouse_position, circle=(WIDTH-25, 24, 14)):
+        pyg.draw.circle(window, Colors.gray, (WIDTH-25, 24), 14)
+    window.blit(pyg.image.load("assets/close.png"), (WIDTH-40, 10))
 
 
 def draw_sidebar(window, HEIGHT):
@@ -61,18 +72,24 @@ def draw_sidebar(window, HEIGHT):
     text_width, text_height = Fonts.contact_font.size("Add new contact")
     window.blit(Fonts.contact_font.render("Add new contact", True, Colors.white), (10 + (190 - text_width)/2, 10 + (25 - text_height)/2))
 
-def draw_messages(window, HEIGHT):
+def draw_messages(window, HEIGHT, objects):
     """Draws the messages of the current contact"""
     contact = Globals.current_contact["account_name"]
     last_message = ""
-    vertical_offset = HEIGHT - 150
+    
+    # Shift message upwards based on how large the message box currently is
+    message_box = objects[0]
+    message_box_lines = chunk_text.chunk(message_box.text, content_width=message_box.width-5, char_width=message_box.font.size("A")[0])
+    offset = max(0, (len(message_box_lines) - 1) * (message_box.font.size("A")[1] + 2))
+  
+    vertical_offset = HEIGHT - 130 - offset
 
     for message in Globals.messages[contact]:
         # Display messages
         if ("message") in message:
             text_list = [""]
             if len(message["message"].strip()) > 0:
-                text_list = chunk_text.Chunk(message["message"], 60)
+                text_list = chunk_text.chunk(message["message"], 60)
             text_width = 0
             for t in text_list:
                 size, x = Fonts.text_font.size(t)

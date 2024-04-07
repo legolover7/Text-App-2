@@ -17,7 +17,9 @@ class Colors:
 
 class Fonts:
     text_font = pyg.font.SysFont("consolas", 16)
+    messaging_font = pyg.font.SysFont("consolas", 18)
     contact_font = pyg.font.SysFont("consolas", 20)
+    new_contact = pyg.font.SysFont("consolas", 26)
 
     login_header = pyg.font.SysFont("consolas", 60)
     login_header_2 = pyg.font.SysFont("consolas", 40)

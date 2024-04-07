@@ -103,6 +103,7 @@ def Login():
                     # If one of the fields are active, update its text content
                     if active_field is not None:
                         active_field.text, Globals.cursor_position = typing_handler.handler(active_field.text, key, (shift, caps, ctrl), Globals.cursor_position)
+                        Globals.cursor_frame = 0
 
                 
             # Mouse button pressed
@@ -137,9 +138,11 @@ def Login():
                 elif email_field.check_mcollision():
                     active_field = email_field
                     Globals.cursor_position = len(active_field.text)
+                    Globals.cursor_frame = 0
                 elif password_field.check_mcollision():
                     active_field = password_field
                     Globals.cursor_position = len(active_field.text)
+                    Globals.cursor_frame = 0
 
                 # Check if the account dropdown was clicked
                 username = account_dropdown.click()
@@ -151,8 +154,12 @@ def Login():
                             password_field.text = account["password"]
                             Globals.contact_list = account["contacts"]
 
+        # Blinking cursor
+        Globals.cursor_frame = min (Globals.cursor_timeout * Globals.FPS + 1, Globals.cursor_frame + 1)
+
         # Refresh screen
         draw(error_message)
+        
         # Draw the different objects of the page
         email_field.draw(active_field)
         password_field.draw(active_field)
@@ -178,6 +185,7 @@ def verify_account(email, password, saved_accounts):
             Globals.contact_account_names = []
             Globals.messages = {}
             Globals.current_contact = {}
+            Globals.cursor_frame = 0
 
             # Get account's saved contacts
             for account in saved_accounts["accounts"]:
