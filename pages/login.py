@@ -4,6 +4,7 @@ pyg.init()
 pyg.font.init()
 import json
 import sys
+import os
 
 # Custom modules
 from classes.display import Colors, Fonts
@@ -45,6 +46,10 @@ def Login():
                 account_dropdown.selected = account_dropdown.options[0]
 
     except FileNotFoundError:
+        try:
+            os.mkdir("data")
+        except FileExistsError:
+            pass
         with open("data/saved_accounts.json", "w") as file:
             file.write(json.dumps({"accounts": []}, indent=4))
 
